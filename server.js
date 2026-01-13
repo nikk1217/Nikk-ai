@@ -1,3 +1,6 @@
+app.get("/", (req, res) => {
+  res.send("Nikk AI is Live 🚀");
+});
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
