@@ -6,28 +6,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const openai = new OpenAI({
+const client = new OpenAI({
   apiKey: process.env.OPENAI_KEY
 });
 
 app.post("/chat", async (req, res) => {
   try {
-    const userMessage = req.body.message;
+    const message = req.body.message;
 
-    const response = await openai.chat.completions.create({
+    const response = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
-        { role: "system", content: "You are a helpful AI assistant." },
-        { role: "user", content: userMessage }
+        { role: "system", content: "You are Nikk AI, a helpful assistant." },
+        { role: "user", content: message }
       ]
     });
 
     res.json({
       reply: response.choices[0].message.content
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ reply: "Server error" });
+  } catch (err) {
+    console.error(err);
+    res.json({ reply: "Server error" });
   }
 });
 
