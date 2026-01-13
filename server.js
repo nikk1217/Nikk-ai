@@ -6,45 +6,39 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 10000;
-const OPENAI_KEY = process.env.OPENAI_KEY;
-
-// Home route
 app.get("/", (req, res) => {
-  res.send("🚀 Nikk AI is running. Use POST /chat to talk to me.");
+  res.send("Nikk AI is running 🚀");
 });
 
-// Chat API
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_KEY}`
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "You are Nikk's personal AI assistant." },
-          { role: "user", content: userMessage }
-        ]
+        model: "gpt-4.1-mini",
+        input: userMessage
       })
     });
 
     const data = await response.json();
 
     res.json({
-      reply: data.choices[0].message.content
+      reply: data.output[0].content[0].text
     });
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "AI failed" });
   }
 });
 
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log("Server running on port " + PORT);
 });
