@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nikk AI</title>
+<style>
+body { background:#111; color:white; font-family:Arial; }
+#chat { max-width:600px; margin:auto; margin-top:40px; }
+input { width:80%; padding:10px; }
+button { padding:10px; }
+.msg { margin:10px 0; }
+.user { color:#0f0; }
+.ai { color:#0af; }
+</style>
+</head>
+<body>
+
+<div id="chat">
+  <h2>Nikk AI 🤖</h2>
+  <div id="messages"></div>
+  <input id="input" placeholder="Ask something..." />
+  <button onclick="send()">Send</button>
+</div>
+
+<script>
+async function send(){
+  let input = document.getElementById("input");
+  let msg = input.value;
+  if(!msg) return;
+
+  document.getElementById("messages").innerHTML += `<div class="msg user">You: ${msg}</div>`;
+  input.value = "";
+
+  let res = await fetch("/chat", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ message: msg })
+  });
+
+  let data = await res.json();
+  document.getElementById("messages").innerHTML += `<div class="msg ai">Nikk AI: ${data.reply}</div>`;
+}
+</script>
+
+</body>
+</html>
