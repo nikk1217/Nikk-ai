@@ -4,110 +4,72 @@
   <title>Nikk AI</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      background:#0f172a;
+      color:white;
+      font-family: Arial;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
     }
-
     .chatbox {
-      width: 400px;
-      background: #020617;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      display: flex;
-      flex-direction: column;
-      height: 80vh;
+      width:400px;
+      background:#020617;
+      padding:20px;
+      border-radius:10px;
+      box-shadow:0 0 20px #6366f1;
     }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
+    #chat {
+      height:300px;
+      overflow-y:auto;
+      margin-bottom:10px;
     }
-
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-
-    .user {
-      color: #22c55e;
-      margin: 8px 0;
-    }
-
-    .bot {
-      color: #38bdf8;
-      margin: 8px 0;
-    }
-
+    .user { color:#22c55e; }
+    .bot { color:#60a5fa; }
     input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      outline: none;
-      font-size: 16px;
+      width:100%;
+      padding:10px;
+      border:none;
+      border-radius:5px;
     }
-
     button {
-      margin-top: 8px;
-      padding: 10px;
-      border: none;
-      background: #6366f1;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #4f46e5;
+      width:100%;
+      margin-top:8px;
+      padding:10px;
+      background:#6366f1;
+      border:none;
+      color:white;
+      border-radius:5px;
+      cursor:pointer;
     }
   </style>
 </head>
 <body>
 
 <div class="chatbox">
-  <h1>Nikk AI 🤖</h1>
-  <div id="messages"></div>
-
-  <input id="input" placeholder="Ask something..." />
-  <button onclick="sendMessage()">Send</button>
+  <h2>Nikk AI 🤖</h2>
+  <div id="chat"></div>
+  <input id="msg" placeholder="Ask something..." />
+  <button onclick="send()">Send</button>
 </div>
 
 <script>
-async function sendMessage() {
-  const input = document.getElementById("input");
-  const message = input.value.trim();
-  if (!message) return;
+async function send() {
+  const msg = document.getElementById("msg").value;
+  if (!msg) return;
 
-  const messages = document.getElementById("messages");
+  document.getElementById("chat").innerHTML += "<div class='user'>You: " + msg + "</div>";
 
-  messages.innerHTML += `<div class="user">You: ${message}</div>`;
-  input.value = "";
+  const res = await fetch("/chat", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ message: msg })
+  });
 
-  try {
-    const res = await fetch("/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message })
-    });
+  const data = await res.json();
 
-    const data = await res.json();
-
-    messages.innerHTML += `<div class="bot">Nikk AI: ${data.response}</div>`;
-    messages.scrollTop = messages.scrollHeight;
-
-  } catch (err) {
-    messages.innerHTML += `<div class="bot">Error connecting to AI</div>`;
-  }
+  document.getElementById("chat").innerHTML += "<div class='bot'>Nikk AI: " + data.response + "</div>";
+  document.getElementById("msg").value = "";
 }
 </script>
 
