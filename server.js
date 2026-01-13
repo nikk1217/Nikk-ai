@@ -1,51 +1,47 @@
 import express from "express";
-import cors from "cors";
 import fetch from "node-fetch";
-import dotenv from "dotenv";
-
-dotenv.config();
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
-const PORT = process.env.PORT || 10000;
-
-app.use(cors());
 app.use(express.json());
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Nikk AI is running 🚀");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// serve website
+app.use(express.static("public"));
+
+app.get("/", (req,res)=>{
+  res.sendFile(path.join(__dirname,"public","index.html"));
 });
 
-// Chat API
-app.post("/chat", async (req, res) => {
+app.post("/chat", async (req,res)=>{
   try {
     const userMessage = req.body.message;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+    const response = await fetch("https://api.openai.com/v1/chat/completions",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${process.env.OPENAI_KEY}`
       },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          { role: "system", content: "You are Nikk AI, a helpful assistant." },
-          { role: "user", content: userMessage }
+      body:JSON.stringify({
+        model:"gpt-3.5-turbo",
+        messages:[
+          {role:"system",content:"You are Nikk AI, a helpful assistant."},
+          {role:"user",content:userMessage}
         ]
       })
     });
 
     const data = await response.json();
+    res.json({ response: data.choices[0].message.content });
 
-    const reply = data.choices[0].message.content;
-
-    res.json({ response: reply });
-  } catch (error) {
-    res.json({ response: "Error: " + error.message });
+  } catch(err){
+    res.json({ response: "Server error" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, ()=> console.log("Running on",PORT));
