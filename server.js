@@ -1,3 +1,22 @@
+import express from "express";
+import cors from "cors";
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+app.use(cors());
+app.use(express.json());
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Nikk AI is running 🚀");
+});
+
+// Chat API
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -22,8 +41,11 @@ app.post("/chat", async (req, res) => {
     const reply = data.choices[0].message.content;
 
     res.json({ response: reply });
-
   } catch (error) {
     res.json({ response: "Error: " + error.message });
   }
+});
+
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
