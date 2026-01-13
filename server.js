@@ -1,20 +1,17 @@
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
+import dotenv from "dotenv";
 
-const app = express();   // 👈 THIS MUST BE ON TOP
+dotenv.config();
+
+const app = express();   // ← PEHLE app define
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public")); // serve index.html
+app.use(express.static("public")); // website serve
 
-const PORT = process.env.PORT || 10000;
+const OPENAI_KEY = process.env.OPENAI_KEY;
 
-// Home page
-app.get("/", (req, res) => {
-  res.sendFile(new URL("./public/index.html", import.meta.url).pathname);
-});
-
-// Chat API
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -23,22 +20,33 @@ app.post("/chat", async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${OPENAI_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [{ role: "user", content: userMessage }]
+        messages: [
+          { role: "system", content: "You are Nikk AI, a helpful assistant." },
+          { role: "user", content: userMessage }
+        ]
       })
     });
 
     const data = await response.json();
-    res.json({ reply: data.choices[0].message.content });
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({
+      reply: data.choices[0].message.content
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(PORT, () => {
-  console.log("Nikk AI running on port " + PORT);
+app.get("/", (req, res) => {
+  res.send("Nikk AI Backend Running");
 });
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
+});;
