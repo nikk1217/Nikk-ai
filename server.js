@@ -9,11 +9,11 @@ const app = express();
 const __dirname = path.resolve();
 
 app.use(express.json());
-app.use(express.static(__dirname)); // 🔥 VERY IMPORTANT
+app.use(express.static(path.join(__dirname,'public'))); // 🔥 VERY IMPORTANT
 
 // serve index.html
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname,'public', "index.html"));
 });
 
 // chat API
