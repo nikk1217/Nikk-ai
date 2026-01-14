@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
@@ -12,15 +11,15 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 👉 static files (index.html)
+// static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// 👉 root route
+// root
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// 👉 chat API
+// chat API
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -31,7 +30,7 @@ app.post("/chat", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
@@ -42,13 +41,14 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
     res.json({ reply: data.choices[0].message.content });
-  } catch (err) {
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ reply: "Server error" });
   }
 });
 
-// 👉 Render port
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+    
