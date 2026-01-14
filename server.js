@@ -19,29 +19,32 @@ app.post("/chat", async (req, res) => {
       return res.json({ reply: "API key missing" });
     }
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    if (!userMessage) {
+      return res.json({ reply: "Empty message" });
+    }
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        input: userMessage
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: userMessage }]
       })
     });
 
     const data = await response.json();
 
-    const reply =
-      data.output_text ||
-      "No reply from AI";
+    if (!data.choices || !data.choices[0]) {
+      return res.json({ reply: "No reply from OpenAI" });
+    }
 
-    res.json({ reply });
+    res.json({ reply: data.choices[0].message.content });
 
   } catch (error) {
-    console.error(error);
-    res.json({ reply: "OpenAI error" });
+    res.json({ reply: "Server error" });
   }
 });
 
