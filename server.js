@@ -1,24 +1,15 @@
 import express from "express";
+import fetch from "node-fetch";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(express.static("public"));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const PORT = process.env.PORT || 10000;
 
-// serve frontend
-app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// chat API
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -27,26 +18,31 @@ app.post("/chat", async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: userMessage }]
+        messages: [
+          { role: "system", content: "You are a helpful AI assistant." },
+          { role: "user", content: userMessage }
+        ]
       })
     });
 
     const data = await response.json();
 
-    res.json({
-      reply: data.choices?.[0]?.message?.content || "No reply"
-    });
+    // ✅ CORRECT PATH
+    const reply =
+      data?.choices?.[0]?.message?.content || "No reply from AI";
+
+    res.json({ reply });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ reply: "Server error" });
   }
 });
 
-const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-  console.log("Nikk AI running on port", PORT);
+  console.log(`Nikk AI running on port ${PORT}`);
 });
